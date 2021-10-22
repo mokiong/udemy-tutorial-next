@@ -1,39 +1,40 @@
 import { useEffect, useState } from 'react';
+import useSWR from 'swr';
 
 const LastSalesPage = () => {
     const [sales, setSales] = useState();
-    const [isLoading, setIsLoading] = useState(false);
+    // const [isLoading, setIsLoading] = useState(false);
+
+    const { data, error, isValidating } = useSWR(
+        'https://next-js-test-1ae85-default-rtdb.asia-southeast1.firebasedatabase.app/sales.json'
+    );
+
+    console.log(data, error, isValidating);
 
     useEffect(() => {
-        setIsLoading(true);
-        fetch(
-            'https://next-js-test-1ae85-default-rtdb.asia-southeast1.firebasedatabase.app/sales.json'
-        )
-            .then((response) => response.json())
-            .then((data) => {
-                const transformedSales = [];
+        if (data) {
+            console.log(data);
+            const transformedSales = [];
 
-                for (const key in data) {
-                    console.log(key);
-                    transformedSales.push({
-                        id: key,
-                        username: data[key].username,
-                        volume: data[key].volume,
-                    });
-                }
+            for (const key in data) {
+                console.log(key);
+                transformedSales.push({
+                    id: key,
+                    username: data[key].username,
+                    volume: data[key].volume,
+                });
+            }
 
-                setSales(transformedSales);
-                console.log(transformedSales);
-                setIsLoading(false);
-            });
-    }, []);
+            setSales(transformedSales);
+        }
+    }, [data]);
 
-    if (isLoading) {
-        return <div>Loading...</div>;
+    if (error) {
+        return <div>Failed to load</div>;
     }
 
-    if (!sales) {
-        return <div>No data yet</div>;
+    if (!data || !sales) {
+        return <div>Loading...</div>;
     }
 
     return (
